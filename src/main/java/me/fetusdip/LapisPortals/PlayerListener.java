@@ -12,6 +12,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -20,6 +22,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Directional;
@@ -67,7 +70,7 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onRightClickDoor(PlayerInteractEvent event) {
-		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getHand() == EquipmentSlot.HAND) {
 			Block block = event.getClickedBlock();
 
 			if (block == null){
@@ -75,15 +78,16 @@ public class PlayerListener implements Listener {
 			}
 
 			if (block.getType() == Material.IRON_DOOR) {
+				Block topBlock = block;
+
 				if (block.getRelative(BlockFace.DOWN).getType() == Material.IRON_DOOR) {
 					block = block.getRelative(BlockFace.DOWN);
 				}
 
 				if (EnderPortals.getFileHandler().isPortalDoor(block)) {
-					BlockState state = block.getState();
-					Openable door = (Openable) state.getData();
-					door.setOpen(!door.isOpen());
-					state.update();
+					BlockData doorData = block.getBlockData();
+					((Door) doorData).setOpen(!((Door) doorData).isOpen());
+					block.setBlockData(doorData);
 				}
 			}
 		}

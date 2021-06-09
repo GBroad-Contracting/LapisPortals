@@ -116,11 +116,11 @@ public class FileHandler {
 						EnderPortal listPort = pfp.portal;
 						writer.print(":" + pfp.playerName + "."
 								+ listPort.getWorldName() + "."
-								+ Integer.toString(listPort.getF()) + "."
-								+ Integer.toString(listPort.getX()) + "."
-								+ Integer.toString(listPort.getY()) + "."
-								+ Integer.toString(listPort.getZ()) + "."
-								+ Integer.toString(listPort.getHash()));
+								+ listPort.getF() + "."
+								+ listPort.getX() + "."
+								+ listPort.getY() + "."
+								+ listPort.getZ() + "."
+								+ listPort.getHash());
 					}
 					writer.print("\n");
 				}
