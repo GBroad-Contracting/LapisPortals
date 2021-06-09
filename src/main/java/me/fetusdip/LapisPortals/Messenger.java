@@ -14,20 +14,25 @@ public class Messenger {
 			+ ChatColor.AQUA + "LapisPortals" + ChatColor.DARK_AQUA + "] "
 			+ ChatColor.WHITE;
 
-	public static enum Phrase {
-		CREATE_SUCCESS(ChatColor.GREEN + "Portal created!"), CREATE_FAIL(
-				ChatColor.RED + "Could not create portal: inventory in use"), TELEPORT_SUCCESS_FREE(
-				ChatColor.GREEN + "Price to teleport: free"), TELEPORT_FAIL_UNBOUND(
-				ChatColor.RED + "You have not yet bound yourself to a portal!");
+	public enum Phrase {
+		CREATE_SUCCESS(ChatColor.GREEN + "Portal created!"),
+		CREATE_FAIL(ChatColor.RED + "Could not create portal: inventory in use"),
+		TELEPORT_SUCCESS_FREE(ChatColor.GREEN + "Price to teleport: free"),
+		TELEPORT_FAIL_UNBOUND(ChatColor.RED + "You have not yet bound yourself to a portal!"),
+		TELEPORT_FAIL_NOT_ENOUGH(ChatColor.RED + "You do not have enough items to teleport, you need 1 Oak Log");
 
 		private String phrase;
 
-		private Phrase(String phrase) {
+		Phrase(String phrase) {
 			this.phrase = phrase;
 		}
 
 		public String get() {
 			return this.phrase;
+		}
+
+		public void setMessage(String message){
+			phrase = message;
 		}
 	}
 

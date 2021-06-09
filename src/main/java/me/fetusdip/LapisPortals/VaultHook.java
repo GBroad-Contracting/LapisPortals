@@ -1,5 +1,6 @@
 package me.fetusdip.LapisPortals;
 
+import me.fetusdip.LapisPortals.config.GlobalConfig;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
@@ -15,15 +16,18 @@ public class VaultHook
   public static Economy econ;
   public static Permission perms;
   
-  public static enum Perm
-  {
-    CREATE("create", true),  TELEPORT("teleport", true),  LIGHTNING("teleport.lightning", true),  NO_SICKNESS("teleport.nosick", false),  FREE("teleport.free", false),  NO_DELAY("teleport.nodelay", false);
+  public enum Perm {
+    CREATE("create", true),
+    TELEPORT("teleport", true),
+    LIGHTNING("teleport.lightning", true),
+    NO_SICKNESS("teleport.nosick", false),
+    FREE("teleport.free", false),
+    NO_DELAY("teleport.nodelay", false);
     
-    private String name;
-    private boolean defaultValue;
+    private final String name;
+    private final boolean defaultValue;
     
-    private Perm(String name, boolean defaultValue)
-    {
+    Perm(String name, boolean defaultValue) {
       this.name = name;
       this.defaultValue = defaultValue;
     }
@@ -49,7 +53,7 @@ public class VaultHook
       boolean bPerms = setupEconomy();
       if ((!bEcon) || (!bPerms)) {
         Messenger.info("No Econ/Perm found: perm/econ disabled for this plugin!");
-      } else if (!plugin.getConfig().getBoolean("UsePermsAndEcon")) {
+      } else if (!GlobalConfig.usePermsAndEcon) {
         Messenger.info("disabling permissions and economy for this plugin");
       } else {
         isEnabled = true;

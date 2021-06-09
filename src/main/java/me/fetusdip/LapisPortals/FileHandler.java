@@ -141,8 +141,7 @@ public class FileHandler {
 			Material type = p.getLocation().clone().add(0.0D, 1.0D, 0.0D)
 					.getBlock().getType();
 
-			if ((p.isWorldLoaded())
-					&& (type != Material.WOODEN_DOOR && type != Material.IRON_DOOR_BLOCK)) {
+			if ((p.isWorldLoaded()) && !MaterialTools.isDoor(type)) {
 				itr.remove();
 				purgePortals(p.getHash());
 			}
@@ -154,8 +153,7 @@ public class FileHandler {
 			Material type = p.getLocation().clone().add(0.0D, 1.0D, 0.0D)
 					.getBlock().getType();
 
-			if ((p.isWorldLoaded())
-					&& (type != Material.WOODEN_DOOR && type != Material.IRON_DOOR_BLOCK)) {
+			if ((p.isWorldLoaded()) && !MaterialTools.isDoor(type)) {
 				itr.remove();
 			}
 		}
@@ -210,9 +208,7 @@ public class FileHandler {
 			}
 		}
 
-		Iterator<EnderPortal> pitr = portals.iterator();
-		while (pitr.hasNext()) {
-			EnderPortal portal = pitr.next();
+		for (EnderPortal portal : portals) {
 			if (portal.isWorldLoaded()) {
 				Location portBlock = portal.getLocation().getBlock()
 						.getLocation();
@@ -316,7 +312,7 @@ public class FileHandler {
 	public boolean addPortal(String world, int f, double x, double y, double z,
 			int hash) {
 		EnderPortal portal = new EnderPortal(world, f, x, y, z, hash);
-		if (portal.getLocation().add(0.0D, 4.0D, 0.0D).getBlock().getType() != Material.REDSTONE_TORCH_ON) {
+		if (portal.getLocation().add(0.0D, 4.0D, 0.0D).getBlock().getType() != Material.REDSTONE_TORCH) {
 			this.portals.add(portal);
 		} else {
 			if (isGlobalHash(hash)) {

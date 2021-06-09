@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Logger;
 
+import me.fetusdip.LapisPortals.config.GlobalConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -118,10 +119,10 @@ public class EnderPortal {
 		if (Bukkit.getServer().getWorld(getWorldName()) == null) {
 			return null;
 		}
-		Location loc = new Location(
+
+		return new Location(
 				Bukkit.getServer().getWorld(getWorldName()), this.x, this.y,
 				this.z, this.f * 90, 0.0F);
-		return loc;
 	}
 
 	public int getF() {
@@ -134,8 +135,7 @@ public class EnderPortal {
 
 	public static ValidPortalReturn validateLocation(Location loc, int facing,
 			EnderPortals plugin) {
-		Material portalMaterial = Material.getMaterial(plugin.getConfig()
-				.getString("PortalMaterial").toUpperCase());
+		Material portalMaterial = GlobalConfig.portalMaterial;
 		ValidPortalReturn returnVal = new ValidPortalReturn();
 
 		Location[] aLoc = new Location[3];
@@ -143,11 +143,8 @@ public class EnderPortal {
 			aLoc[iii] = loc.clone().add(0.0D, iii + 1, 0.0D);
 		}
 		boolean valid = true;
-		if ((loc.getBlock().getType() == portalMaterial)
-				&& (aLoc[0].getBlock().getType() == Material.WOODEN_DOOR || aLoc[0].getBlock().getType() == Material.IRON_DOOR_BLOCK)) {
-			if ((aLoc[1].getBlock().getType() == Material.WOODEN_DOOR || aLoc[1].getBlock().getType() == Material.IRON_DOOR_BLOCK)
-					&& (aLoc[2].getBlock().getType() == portalMaterial)) {
-				
+		if ((loc.getBlock().getType() == portalMaterial) && MaterialTools.isDoor(aLoc[0].getBlock().getType())) {
+			if (MaterialTools.isDoor(aLoc[1].getBlock().getType()) && (aLoc[2].getBlock().getType() == portalMaterial)) {
 				for (int iii = 0; iii < 3; iii++) {
 					Coords coords = new Coords(loc);
 					int tmpFacing = (facing + 1 + iii) % 4;
@@ -173,17 +170,12 @@ public class EnderPortal {
 								hash += items.hashCode();
 							}
 						}
-					} else if ((mat == Material.WOOL)  
-							|| (mat == Material.WOOD) 
-							|| (mat == Material.LOG)
-							|| (mat == Material.LEAVES)
-							|| (mat == Material.SMOOTH_BRICK)
-							|| (mat == Material.GLASS)) 
-					{
+					} else if (MaterialTools.isHashable(mat)) {
 						hash = identifier.getState().getData().hashCode();
 					} else {
 						valid = false;
 					}
+
 					if (valid) {
 						boolean canUse = EnderPortals.getFileHandler().canUseHash(hash);
 						boolean isGlobal = EnderPortals.getFileHandler().isGlobalHash(hash);
@@ -206,11 +198,10 @@ public class EnderPortal {
 			return false;
 		}
 		Location loc = getLocation();
-		if (block.getType() == Material.WOODEN_DOOR || block.getType() == Material.IRON_DOOR) {
-			if ((loc.add(0.0D, 1.0D, 0.0D).getBlock().equals(block))
-					|| (loc.add(0.0D, 1.0D, 0.0D).getBlock().equals(block))) {
-				return true;
-			}
+
+		if (MaterialTools.isDoor(block.getType())){
+			return (loc.add(0.0D, 1.0D, 0.0D).getBlock().equals(block))
+					|| (loc.add(0.0D, 1.0D, 0.0D).getBlock().equals(block));
 		} else {
 			for (Block lapisBlock : this.lapis) {
 				if (lapisBlock.equals(block)) {
@@ -221,10 +212,9 @@ public class EnderPortal {
 		return false;
 	}
 
-	public boolean isStillValid(EnderPortals plugin) {
+	public boolean isStillValid() {
 		for (Block block : this.lapis) {
-			if (block.getType() != Material.getMaterial(plugin.getConfig()
-					.getString("PortalMaterial").toUpperCase())) {
+			if (block.getType() != GlobalConfig.portalMaterial) {
 				return false;
 			}
 		}
@@ -243,7 +233,7 @@ public class EnderPortal {
 		this.worldName = worldName;
 	}
 
-	public class PlayerFromPortal {
+	public static class PlayerFromPortal {
 		public String playerName;
 		public EnderPortal portal;
 

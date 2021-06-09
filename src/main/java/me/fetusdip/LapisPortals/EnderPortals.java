@@ -1,5 +1,7 @@
 package me.fetusdip.LapisPortals;
 
+import me.fetusdip.LapisPortals.config.ConfigManager;
+import me.fetusdip.LapisPortals.config.GlobalConfig;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -10,8 +12,6 @@ public class EnderPortals extends JavaPlugin {
 
 	public void onDisable() {
 		getFileHandler().save();
-		reloadConfig();
-		saveConfig();
 		PluginDescriptionFile pdfFile = getDescription();
 		Messenger.info(pdfFile.getName() + " " + pdfFile.getVersion()
 				+ " is now disabled.");
@@ -46,21 +46,7 @@ public class EnderPortals extends JavaPlugin {
 	}
 
 	public void loadConfig() {
-		
-		String PORTAL_MAT = "lapis_block";
-		int PRICE = 0;
-		boolean LIGHTNING_ENABLED = true;
-		boolean SICKNESS_ENABLED = true;
-		boolean PERMISSIONS_ECON_ENABLED = true;
-		int TELEPORT_DELAY = 0;
-
-		getConfig().addDefault("PortalMaterial", PORTAL_MAT);
-		getConfig().addDefault("Price", Integer.valueOf(PRICE));
-		getConfig().addDefault("Lightning", Boolean.valueOf(LIGHTNING_ENABLED));
-		getConfig().addDefault("TeleSickness", Boolean.valueOf(SICKNESS_ENABLED));
-		getConfig().addDefault("UsePermsAndEcon", Boolean.valueOf(PERMISSIONS_ECON_ENABLED));
-		getConfig().addDefault("TeleDelay", Integer.valueOf(TELEPORT_DELAY));
-		getConfig().options().copyDefaults(true);
-		saveConfig();
+		ConfigManager manager = new ConfigManager(this);
+		manager.loadConfig("config", GlobalConfig.class);
 	}
 }

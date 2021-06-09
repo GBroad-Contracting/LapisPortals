@@ -3,6 +3,8 @@ package me.fetusdip.LapisPortals;
 import java.util.List;
 import java.util.logging.Logger;
 
+import io.papermc.lib.PaperLib;
+import me.fetusdip.LapisPortals.config.GlobalConfig;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -18,6 +20,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Directional;
 import org.bukkit.material.Openable;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -27,7 +31,8 @@ import org.bukkit.potion.PotionEffectType;
 
 public class PlayerListener implements Listener {
 	private static final Logger log = Logger.getLogger("Minecraft");
-	EnderPortals plugin;
+
+	private final EnderPortals plugin;
 
 	public PlayerListener(EnderPortals newPlugin) {
 		this.plugin = newPlugin;
@@ -35,11 +40,9 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerPlace(BlockPlaceEvent event) {
-
-		if ((event.getBlockPlaced().getType() == Material.WOODEN_DOOR || event
-				.getBlockPlaced().getType() == Material.IRON_DOOR_BLOCK)
+		if (MaterialTools.isDoor(event.getBlockPlaced().getType())
 				&& (VaultHook.hasPermission(event.getPlayer(),
-						VaultHook.Perm.CREATE))) {
+				VaultHook.Perm.CREATE))) {
 			int facing = (((Directional) event.getBlockPlaced().getState()
 					.getData()).getFacing().ordinal() + 2) % 4;
 			Location tmp = event.getBlock().getLocation();
@@ -67,9 +70,14 @@ public class PlayerListener implements Listener {
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			Block block = event.getClickedBlock();
 
-			if (block.getType() == Material.IRON_DOOR_BLOCK) {
-				if (block.getRelative(BlockFace.DOWN).getType() == Material.IRON_DOOR_BLOCK)
+			if (block == null){
+				return;
+			}
+
+			if (block.getType() == Material.IRON_DOOR) {
+				if (block.getRelative(BlockFace.DOWN).getType() == Material.IRON_DOOR) {
 					block = block.getRelative(BlockFace.DOWN);
+				}
 
 				if (EnderPortals.getFileHandler().isPortalDoor(block)) {
 					BlockState state = block.getState();
@@ -89,65 +97,87 @@ public class PlayerListener implements Listener {
 		if (portal == null)
 			return;
 
-		if ((portal.isStillValid(this.plugin))
+		if ((portal.isStillValid())
 				&& (event.getClickedBlock() != null)
 				&& (VaultHook.hasPermission(event.getPlayer(),
-						VaultHook.Perm.TELEPORT))) {
-			if ((event.getClickedBlock().getType() == Material.WOODEN_DOOR || event
-					.getClickedBlock().getType() == Material.IRON_DOOR_BLOCK)
-					&& (event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+				VaultHook.Perm.TELEPORT))) {
+			if (event.getAction() == Action.RIGHT_CLICK_BLOCK && MaterialTools.isDoor(event.getClickedBlock().getType())) {
 				Block tmpBlock = event.getClickedBlock();
-				if (tmpBlock.getRelative(BlockFace.DOWN).getType() == Material.WOODEN_DOOR
-						|| tmpBlock.getRelative(BlockFace.DOWN).getType() == Material.IRON_DOOR_BLOCK)
+				if (MaterialTools.isDoor(tmpBlock.getRelative(BlockFace.DOWN).getType())) {
 					tmpBlock = tmpBlock.getRelative(BlockFace.DOWN);
-				Openable door = (Openable) tmpBlock.getState().getData();
-				if (door.isOpen()) {
-					Player p = event.getPlayer();
-					Location toLoc = null;
-					if (!portal.isGlobal()) {
-						toLoc = EnderPortals.getFileHandler().getTpLocation(
-								portal);
-						if (toLoc != null) {
-							EnderPortal toPortal = EnderPortals
-									.getFileHandler().getTpPortal(portal);
-							if (toPortal != null) {
-								toPortal.setPlayerPortal(p, portal);
+					Openable door = (Openable) tmpBlock.getState().getData();
+					if (door.isOpen()) {
+						Player p = event.getPlayer();
+						Location toLoc = null;
+						if (!portal.isGlobal()) {
+							toLoc = EnderPortals.getFileHandler().getTpLocation(
+									portal);
+							if (toLoc != null) {
+								EnderPortal toPortal = EnderPortals
+										.getFileHandler().getTpPortal(portal);
+								if (toPortal != null) {
+									toPortal.setPlayerPortal(p, portal);
+								}
 							}
-						}
-					} else {
-						EnderPortal tmpPortal = portal.getPlayerPortal(p);
-						if (tmpPortal != null) {
-							toLoc = tmpPortal.getLocation();
-						}
-						if (toLoc == null) {
-							Messenger.tell(p,
-									Messenger.Phrase.TELEPORT_FAIL_UNBOUND);
 						} else {
-							toLoc = toLoc.clone().add(0.5D, 1.0D, 0.5D);
-						}
-					}
-					if (toLoc != null) {
-						List<MetadataValue> md = event.getPlayer().getMetadata("lpLastTele");
-						if ((md.size() >= 1)
-								&& (!VaultHook.hasPermission(event.getPlayer(),
-										VaultHook.Perm.NO_DELAY))) {
-							long dt = (System.currentTimeMillis() - md.get(0).asLong()) / 1000L;
-							double delayRequired = this.plugin.getConfig()
-									.getDouble("TeleDelay");
-							if (dt < delayRequired) {
-								Messenger.tell(event.getPlayer(), ChatColor.RED
-										+ "You must wait "
-										+ (int) (delayRequired - dt)
-										+ " more seconds");
-								return;
+							EnderPortal tmpPortal = portal.getPlayerPortal(p);
+							if (tmpPortal != null) {
+								toLoc = tmpPortal.getLocation();
+							}
+							if (toLoc == null) {
+								Messenger.tell(p,
+										Messenger.Phrase.TELEPORT_FAIL_UNBOUND);
+							} else {
+								toLoc = toLoc.clone().add(0.5D, 1.0D, 0.5D);
 							}
 						}
-						if (VaultHook.charge(event.getPlayer(), this.plugin
-								.getConfig().getDouble("Price"))) {
+						if (toLoc != null) {
+							List<MetadataValue> md = event.getPlayer().getMetadata("lpLastTele");
+							if ((md.size() >= 1)
+									&& (!VaultHook.hasPermission(event.getPlayer(),
+									VaultHook.Perm.NO_DELAY))) {
+								long dt = (System.currentTimeMillis() - md.get(0).asLong()) / 1000L;
+								double delayRequired = GlobalConfig.teleportDelay;
+								if (dt < delayRequired) {
+									Messenger.tell(event.getPlayer(), ChatColor.RED
+											+ "You must wait "
+											+ (int) (delayRequired - dt)
+											+ " more seconds");
+									return;
+								}
+							}
+
+							if (GlobalConfig.useVaultInstead) {
+								if (!VaultHook.charge(event.getPlayer(), GlobalConfig.price)){
+									Messenger.tell(p, Messenger.Phrase.TELEPORT_FAIL_NOT_ENOUGH);
+									return;
+								}
+							} else {
+								Inventory inventory = event.getPlayer().getInventory();
+								int slot = inventory.first(GlobalConfig.materialCost);
+								if (slot == -1){
+									Messenger.tell(p, Messenger.Phrase.TELEPORT_FAIL_NOT_ENOUGH);
+									return;
+								}
+
+								ItemStack itemStack = inventory.getItem(slot);
+
+								if (itemStack == null){
+									return;
+								}
+
+								if (itemStack.getAmount() < GlobalConfig.price){
+									Messenger.tell(p, Messenger.Phrase.TELEPORT_FAIL_NOT_ENOUGH);
+									return;
+								}
+
+								itemStack.setAmount((int) (itemStack.getAmount() - GlobalConfig.price));
+								// TODO check this
+							}
+
 							if (VaultHook.hasPermission(p,
 									VaultHook.Perm.LIGHTNING)) {
-								if (this.plugin.getConfig().getBoolean(
-										"Lightning")) {
+								if (GlobalConfig.useLightning) {
 									portal.getLocation()
 											.getWorld()
 											.strikeLightningEffect(
@@ -161,10 +191,10 @@ public class PlayerListener implements Listener {
 															3.0D, 0.0D));
 								}
 							}
+
 							if (!VaultHook.hasPermission(p,
 									VaultHook.Perm.NO_SICKNESS)) {
-								if (this.plugin.getConfig().getBoolean(
-										"TeleSickness")) {
+								if (GlobalConfig.useSickness) {
 									p.addPotionEffect(new PotionEffect(
 											PotionEffectType.CONFUSION, 300, 1));
 									p.addPotionEffect(new PotionEffect(
@@ -173,7 +203,9 @@ public class PlayerListener implements Listener {
 											PotionEffectType.WEAKNESS, 300, 1));
 								}
 							}
-							p.teleport(toLoc);
+
+							PaperLib.teleportAsync(p, toLoc); // Async teleport or fallback to spigot sync
+
 							BlockState toDoorState = toLoc.getBlock()
 									.getState();
 							Openable toDoor = (Openable) toDoorState.getData();
@@ -186,8 +218,8 @@ public class PlayerListener implements Listener {
 							p.setMetadata(
 									"lpLastTele",
 									new FixedMetadataValue(this.plugin,
-											Long.valueOf(System
-													.currentTimeMillis())));
+											System.currentTimeMillis()));
+
 						}
 					}
 				}
@@ -201,7 +233,7 @@ public class PlayerListener implements Listener {
 		Block door = event.getBlock();
 		Material type = door.getType();
 
-		if (type == Material.WOODEN_DOOR || type == Material.IRON_DOOR_BLOCK) {
+		if (MaterialTools.isDoor(type)) {
 			if (door.getRelative(BlockFace.DOWN).getType() == type)
 				door = door.getRelative(BlockFace.DOWN);
 			if (EnderPortals.getFileHandler().isPortalDoor(door))
