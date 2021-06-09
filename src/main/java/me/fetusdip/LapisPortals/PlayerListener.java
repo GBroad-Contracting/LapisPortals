@@ -172,7 +172,6 @@ public class PlayerListener implements Listener {
 								}
 
 								itemStack.setAmount((int) (itemStack.getAmount() - GlobalConfig.price));
-								// TODO check this
 							}
 
 							if (VaultHook.hasPermission(p,

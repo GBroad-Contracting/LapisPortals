@@ -36,7 +36,7 @@ public class GlobalConfig extends BaseConfig {
     private static void loadMessages(){
         for (Messenger.Phrase phrase : Messenger.Phrase.values()){
             phrase.setMessage(ChatColor.translateAlternateColorCodes('&', getString(
-                    phrase.name().replaceAll("__", ".").replaceAll("_", "-"),
+                    "message." + phrase.name().replaceAll("__", ".").replaceAll("_", "-").toLowerCase(),
                     phrase.get()
             )));
         }
