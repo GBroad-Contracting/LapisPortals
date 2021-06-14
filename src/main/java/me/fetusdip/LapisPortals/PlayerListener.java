@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,7 +26,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Directional;
 import org.bukkit.material.Openable;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -46,14 +46,17 @@ public class PlayerListener implements Listener {
 		if (MaterialTools.isDoor(event.getBlockPlaced().getType())
 				&& (VaultHook.hasPermission(event.getPlayer(),
 				VaultHook.Perm.CREATE))) {
-			int facing = (((Directional) event.getBlockPlaced().getState()
-					.getData()).getFacing().ordinal() + 2) % 4;
+
+			Door door = (Door) event.getBlockPlaced().getBlockData();
+			int facing = (door.getFacing().ordinal() + 2) % 4;
+
 			Location tmp = event.getBlock().getLocation();
 			Location loc = new Location(tmp.getWorld(), tmp.getX(),
 					tmp.getY() - 1.0D, tmp.getZ());
 			Player p = event.getPlayer();
 			ValidPortalReturn returned = EnderPortal.validateLocation(loc,
 					facing, this.plugin);
+
 			if (returned.isValid()) {
 				if (EnderPortals.getFileHandler().addPortal(
 						loc.getWorld().getName(), facing, loc.getX(),
@@ -78,8 +81,6 @@ public class PlayerListener implements Listener {
 			}
 
 			if (block.getType() == Material.IRON_DOOR) {
-				Block topBlock = block;
-
 				if (block.getRelative(BlockFace.DOWN).getType() == Material.IRON_DOOR) {
 					block = block.getRelative(BlockFace.DOWN);
 				}
@@ -98,8 +99,9 @@ public class PlayerListener implements Listener {
 		EnderPortal portal = EnderPortals.getFileHandler().onPortal(
 				event.getPlayer());
 
-		if (portal == null)
+		if (portal == null) {
 			return;
+		}
 
 		if ((portal.isStillValid())
 				&& (event.getClickedBlock() != null)
