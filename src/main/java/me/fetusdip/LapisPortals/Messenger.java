@@ -19,7 +19,8 @@ public class Messenger {
 		CREATE_FAIL(ChatColor.RED + "Could not create portal: inventory in use"),
 		TELEPORT_SUCCESS_FREE(ChatColor.GREEN + "Price to teleport: free"),
 		TELEPORT_FAIL_UNBOUND(ChatColor.RED + "You have not yet bound yourself to a portal!"),
-		TELEPORT_FAIL_NOT_ENOUGH(ChatColor.RED + "You do not have enough items to teleport, you need 1 Oak Log");
+		TELEPORT_FAIL_NOT_ENOUGH(ChatColor.RED + "You do not have enough items to teleport, you need 1 Oak Log"),
+		TELEPORT_MUST_WAIT(ChatColor.RED + "You must wait %delay% more seconds to teleport");
 
 		private String phrase;
 

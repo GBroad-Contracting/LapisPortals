@@ -48,7 +48,7 @@ public class PlayerListener implements Listener {
 				VaultHook.Perm.CREATE))) {
 
 			Door door = (Door) event.getBlockPlaced().getBlockData();
-			int facing = (door.getFacing().ordinal() + 2) % 4;
+			int facing = door.getFacing().ordinal() % 4;
 
 			Location tmp = event.getBlock().getLocation();
 			Location loc = new Location(tmp.getWorld(), tmp.getX(),
@@ -96,6 +96,10 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (event.getHand() != EquipmentSlot.HAND){
+			return;
+		}
+
 		EnderPortal portal = EnderPortals.getFileHandler().onPortal(
 				event.getPlayer());
 
@@ -111,7 +115,9 @@ public class PlayerListener implements Listener {
 				Block tmpBlock = event.getClickedBlock();
 				if (MaterialTools.isDoor(tmpBlock.getRelative(BlockFace.DOWN).getType())) {
 					tmpBlock = tmpBlock.getRelative(BlockFace.DOWN);
-					Openable door = (Openable) tmpBlock.getState().getData();
+
+					Door door = (Door) tmpBlock.getBlockData();
+
 					if (door.isOpen()) {
 						Player p = event.getPlayer();
 						Location toLoc = null;
@@ -145,10 +151,8 @@ public class PlayerListener implements Listener {
 								long dt = (System.currentTimeMillis() - md.get(0).asLong()) / 1000L;
 								double delayRequired = GlobalConfig.teleportDelay;
 								if (dt < delayRequired) {
-									Messenger.tell(event.getPlayer(), ChatColor.RED
-											+ "You must wait "
-											+ (int) (delayRequired - dt)
-											+ " more seconds");
+									Messenger.tell(event.getPlayer(), Messenger.Phrase.TELEPORT_MUST_WAIT.get().replaceAll("%delay%",
+											Integer.toString((int) (delayRequired - dt))));
 									return;
 								}
 							}
