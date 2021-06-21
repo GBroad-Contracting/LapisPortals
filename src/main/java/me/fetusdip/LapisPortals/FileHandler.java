@@ -86,7 +86,6 @@ public class FileHandler {
 	}
 
 	public void save() {
-		purgeInvalidPortals();
 		try {
 			File file = new File(this.plugin.getDataFolder().getPath()
 					+ File.separatorChar + "Portals.dat");

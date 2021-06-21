@@ -27,10 +27,11 @@ public class EnderPortals extends JavaPlugin {
 		PluginDescriptionFile pdfFile = getDescription();
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(this.playerListener, this);
-		getServer().getScheduler().scheduleSyncRepeatingTask(this,
+		getServer().getScheduler().runTaskTimer(this,
 				new Runnable() {
 					public void run() {
-						EnderPortals.getFileHandler().save();
+						getFileHandler().purgeInvalidPortals();
+						getServer().getScheduler().runTaskAsynchronously(EnderPortals.this, () -> EnderPortals.getFileHandler().save());
 					}
 				}, 600L, 600L);
 		Messenger.info(pdfFile.getName() + " " + pdfFile.getVersion()
